@@ -1,0 +1,17 @@
+from Compiler import util
+
+#program.set_bit_length(32)
+#sfix.set_precision(16, 31)
+
+a = sint.Array(64)
+a.assign_all(sint(1))
+b = sint.Array(64)
+b.assign_all(sint(1))
+
+c = sfix.Array(64)
+c.assign_all(sfix(1))
+d = sfix.Array(64)
+d.assign_all(sfix(1))
+
+a.get_vector() == b.get_vector()
+#a.get_vector().bit_decompose()

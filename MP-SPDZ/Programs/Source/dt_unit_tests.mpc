@@ -1,0 +1,130 @@
+from Compiler.decision_tree_new import TreeClassifier
+from Compiler.decision_tree_new import GroupMax, GroupSum, GroupPrefixSum, ComputeGini, GroupFirstOne, VectMax, Custom_GT_Fractions, OneHotEnc, TreeTrainer, ApplyPermutation, ApplyInversePermutation, TestOneHotEnc
+from Compiler.dt_unit_tests_util import *
+from Compiler.sorting import *
+import random
+import util
+
+def initialize_plain_data(bit_length=64, n=10, m=3):
+    g_plain = [random.randint(0, 1) for _ in range(n)]
+    g_plain[0] = 1
+    g_plain.append(1)
+    y_plain = [random.randint(0, 1) for _ in range(n)]
+    AID_plain = [random.randint(0, m-1) for _ in range(n)]
+    Threshold_plain = [random.randint(1, 50) for _ in range(n)]
+
+    ones_plain = [1]*n
+    y_plain_not = []
+    for i in range(len(y_plain)):
+        y_plain_not.append(1-y_plain[i])
+
+    y_plain_sum = GroupSum_plain (g_plain, y_plain)
+    y_plain_not_sum = GroupSum_plain (g_plain, y_plain_not)
+    ones_plain_sum = GroupSum_plain (g_plain, ones_plain)
+
+    x_plain = [None]*m
+    for i in range(m):
+        x_plain[i] = [random.randint(1, 50) for _ in range(n)]
+
+    return g_plain, x_plain, y_plain, y_plain_sum, y_plain_not_sum, ones_plain_sum, AID_plain, Threshold_plain
+
+def initialize_secret_data(g_plain, x_plain, y_plain, AID_plain, Threshold_plain):
+    n = len(y_plain)
+    m = len(x_plain)
+
+    g, y, y_not, ones, AID, Threshold = [sint.Array(n) for i in range(6)]
+    ones.assign_all(1)
+    x = sint.Matrix(m, n)
+
+    for i in range(n):
+        g[i] = sint(g_plain[i])
+        y[i] = sint(y_plain[i])
+        y_not[i] = sint(1 - y_plain[i])
+        for j in range(m):
+            x[j][i] = sint(x_plain[j][i])
+        AID[i] = sint(AID_plain[i])
+        Threshold[i] = sint(Threshold_plain[i])
+
+    y_sum = GroupSum(g, y)
+    y_not_sum = GroupSum(g, y_not)
+    ones_sum = GroupSum(g, ones)
+
+    return g, x, y, y_sum, y_not_sum, ones_sum, AID, Threshold
+
+bit_length = 64
+n = 10
+m = 3
+
+g_plain, x_plain, y_plain, y_plain_sum, y_plain_not_sum, ones_plain_sum, AID_plain, Threshold_plain = initialize_plain_data()
+g, x, y, y_sum, y_not_sum, ones_sum, AID, Threshold  = initialize_secret_data(g_plain, x_plain, y_plain, AID_plain, Threshold_plain)
+
+print_ln("g expected: %s got: %s", g_plain, g.reveal())
+print_ln("x expected: %s got: %s", x_plain, x.reveal_nested())
+print_ln("y expected: %s got: %s", y_plain, y.reveal())
+print_ln("Sum of y expected: %s got: %s", y_plain_sum, y_sum.reveal())
+print_ln("Sum of !y expected: %s got: %s", y_plain_not_sum, y_not_sum.reveal())
+print_ln("Sum of ones expected: %s got: %s", ones_plain_sum, ones_sum.reveal())
+print_ln("AID expected: %s got: %s", AID_plain, AID.reveal())
+
+GroupSum_plain_y = GroupSum_plain(g_plain, y_plain)
+GroupSum_y = GroupSum(g, y)
+print_ln("GroupSum expected: %s , got: %s", GroupSum_plain_y, GroupSum_y.reveal())
+
+GroupPrefixSum_plain_y = GroupPrefixSum_plain(g_plain, y_plain)
+GroupPrefixSum_y = GroupPrefixSum(g, y)
+print_ln("GroupPrefixSum expected: %s , got: %s", GroupPrefixSum_plain_y, GroupPrefixSum_y.reveal())
+
+tree = TreeTrainer (x, y, 5)
+
+SetupPerm_res_plain = []
+SetupPerm_res = tree.SetupPerm (g, x, y)
+
+for i in range(m):
+    SetupPerm_res_plain.append(GetSortPerm_plain(g_plain, x_plain[i]))
+
+print_ln("Set up permutations expected: %s, got : %s", SetupPerm_res_plain, SetupPerm_res.reveal_nested())
+
+GroupMax_plain_p, GroupMax_plain_q, GroupMax_plain_t, GroupMax_plain_a = GroupMax_plain(g_plain, x_plain[0], x_plain[1], Threshold_plain, AID_plain)
+GroupMax_p, GroupMax_q, GroupMax_t, GroupMax_a = GroupMax(g, x[0], x[1], Threshold, AID)
+print_ln("GroupMax expected: %s / %s , threshold: %s , attribute: %s , got: %s / %s , threshold: %s , attribute: %s", GroupMax_plain_p, GroupMax_plain_q, GroupMax_plain_t, GroupMax_plain_a, GroupMax_p.reveal(), GroupMax_q.reveal(), GroupMax_t.reveal(), GroupMax_a.reveal())
+
+VectMax_plain_p, VectMax_plain_q, VectMax_plain_t, VectMax_plain_a = VectMax_plain(x_plain[0], x_plain[1], Threshold_plain, AID_plain)
+VectMax_p, VectMax_q, VectMax_t, VectMax_a = VectMax(x[0], x[1], Threshold, AID)
+print_ln("VectMax expected: %s / %s , threshold: %s , attribute: %s got: %s / %s , threshold: %s , attribute: %s", VectMax_plain_p, VectMax_plain_q, VectMax_plain_t, VectMax_plain_a, VectMax_p.reveal(), VectMax_q.reveal(), VectMax_t.reveal(), VectMax_a.reveal())
+
+print_ln("Sorted x_plain: %s Sorted x: %s", PermApply(PermInv(SetupPerm_res_plain[0]), x_plain[0]),ApplyInversePermutation(SetupPerm_res[0], x[0]).reveal())
+print_ln("Sorted y_plain: %s Sorted y: %s", PermApply(PermInv(SetupPerm_res_plain[0]), y_plain),ApplyInversePermutation(SetupPerm_res[0], y).reveal())
+
+Gini_plain_value = ComputeGini_plain (g_plain, PermApply(PermInv(SetupPerm_res_plain[0]), x_plain[0]), PermApply(PermInv(SetupPerm_res_plain[0]), y_plain))
+Gini_value = ComputeGini (g, ApplyInversePermutation(SetupPerm_res[0], x[0]), ApplyInversePermutation(SetupPerm_res[0], y))
+print_ln("ComputeGini expected: %s , got: %s", Gini_plain_value, util.reveal(Gini_value))
+
+TestSelection_plain_res_a, TestSelection_plain_res_t = TestSelection_plain(g_plain, x_plain, y_plain, SetupPerm_res_plain, ones_plain_sum, y_plain_not_sum, y_plain_sum)
+TestSelection_res_a, TestSelection_res_t = tree.TestSelection (g, x, y, SetupPerm_res,  ones_sum, y_not_sum, y_sum)
+print_ln("TestSelection expected: %s %s got: %s %s", TestSelection_plain_res_a, TestSelection_plain_res_t, util.reveal(TestSelection_res_a), util.reveal(TestSelection_res_t))
+
+GroupFirstOne_plain_y = GroupFirstOne_plain (g_plain, y_plain)
+GroupFirstOne_y = GroupFirstOne (g, y)
+print_ln("GroupFirstOne expected: %s, got : %s", GroupFirstOne_plain_y, GroupFirstOne_y.reveal())
+
+Custom_GT_plain_res = Custom_GT_Fractions_plain (x_plain[0], x_plain[1], x_plain[2], x_plain[0])
+Custom_GT_res = Custom_GT_Fractions (x[0], x[1], x[2], x[0])
+print_ln("Custom_GT_Fractions expected: %s, got : %s", Custom_GT_plain_res, Custom_GT_res.reveal())
+
+OneHotEnc_plain_res = OneHotEnc_plain (3, 7)
+OneHotEnc_res = OneHotEnc (sint(3), 7)
+print_ln("OneHotEnc expected: %s, got : %s", OneHotEnc_plain_res, OneHotEnc_res.reveal())
+
+Testing_OneHotEnc_res = TestOneHotEnc (AID, m, n)
+print_ln("Testing_OneHotEnc_res: %s", Testing_OneHotEnc_res.reveal_nested())
+
+ApplyTests_plain_res = ApplyTests_plain (x_plain, AID_plain, Threshold_plain)
+ApplyTests_res = tree.ApplyTests (x, AID, Threshold)
+print_ln("ApplyTests expected: %s got: %s", ApplyTests_plain_res, util.reveal(ApplyTests_res))
+print_ln("ApplyTests_res type: %s", type(ApplyTests_res))
+
+UpdateState_plain_res = UpdateState_plain (g_plain, x_plain, y_plain, SetupPerm_res_plain, y_plain, ApplyTests_plain_res, 1)
+UpdateState_res = tree.UpdateState (g, x, y, SetupPerm_res, y, ApplyTests_res, 1)
+print_ln("UpdateState expected: %s", UpdateState_plain_res)
+print_ln("UpdateState got : %s %s %s %s %s", UpdateState_res[0].reveal(), UpdateState_res[1].reveal_nested(), UpdateState_res[2].reveal(), UpdateState_res[3].reveal_nested(), UpdateState_res[4].reveal())
+

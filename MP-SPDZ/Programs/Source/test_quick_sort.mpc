@@ -1,0 +1,17 @@
+from Compiler.sorting import *
+
+a = Array(10, sint)
+
+@for_range(10)
+def f(i):
+    a[i] = sint(10-i)
+
+print_ln("a: %s", a.reveal())
+shuffle = types.sint.get_secure_shuffle(len(a))
+a.secure_permute(shuffle)
+print_ln("Shuffled a: %s", a.reveal())
+
+quick_sort(a, 0, 9)
+
+a.secure_permute(shuffle, reverse=True)
+print_ln("Unshuffled a: %s", a.reveal())
