@@ -12,15 +12,15 @@ data_y = np.random.randint(2, size=(1, n))
 df_x = pd.DataFrame(data_x)
 df_y = pd.DataFrame(data_y)
 
-df_x = sfix.input_tensor_via(0, df_x) # loop blow up
-df_y = sint.input_tensor_via(0, df_y) #loop blow up
-df_y = Array.create_from(df_y[0]) #loop blow up
+df_x = sfix.input_tensor_via(0, df_x) 
+df_y = sint.input_tensor_via(0, df_y)
+df_y = Array.create_from(df_y[0])
 
 #program.set_bit_length(16)
 program.set_bit_length(32)
 sfix.set_precision(16, 31)
 
-from Compiler.decision_tree_modified import TreeClassifier
+from Compiler.decision_tree_new import TreeClassifier
 
 tree = TreeClassifier(max_depth=int(program.args[3]), n_threads=4)
 
