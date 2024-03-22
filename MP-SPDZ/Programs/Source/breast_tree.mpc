@@ -33,7 +33,7 @@ tree.fit(X_train, y_train)
 # print_ln('%s', (tree.predict(X_test) - y_test.get_vector()).reveal())
 
 # output tree
-# tree.output()
+tree.output()
 
 # training with level-wise accuracy output
 # tree.fit_with_testing(X_train, y_train, X_test, y_test)
