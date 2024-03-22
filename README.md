@@ -1,11 +1,14 @@
 # Initial Setup
 
-- Build MP-SPDZ from source (Section **TL;DR (Source Distribution)** at [https://github.com/data61/MP-SPDZ](https://github.com/data61/MP-SPDZ))
+- `sudo apt-get install automake build-essential clang cmake git libgmp-dev libntl-dev libsodium-dev libssl-dev libtool python3 python3-pip`
+- `pip install scikit-learn pandas fabric`
+- `make boost`
 - Setup passwordless auth so that it's possible to directly ssh between machines. Refer [https://www.tecmint.com/ssh-passwordless-login-using-ssh-keygen-in-5-easy-steps/](https://www.tecmint.com/ssh-passwordless-login-using-ssh-keygen-in-5-easy-steps/)
 
 Inside the MP-SPDZ directory, run the following:
 - `make replicated-ring-party.x` since we use 3 party Replicated Secret Sharing, in the Semi-Honest setting.
 - `Scripts/setup-ssl.sh 3` to generate necessary certificates and keys to setup secure channels between parties.
+- Edit the HOSTS file with respective username, VM IP address and the output directory.
 
 # Relevant Files
 - `Programs/Source/custom_data.mpc`: Returns trained decision tree trained on `x` initialized to a nxm matrix of random values and `y` initialized to a vector of n random values, where n and m are provided as command line arguments. Useful for benchmarking.
