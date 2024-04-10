@@ -1,5 +1,6 @@
 # Initial Setup
-
+- `sudo apt-get update`
+- `sudo apt-get upgrade`
 - `sudo apt-get install automake build-essential clang cmake git libgmp-dev libntl-dev libsodium-dev libssl-dev libtool python3 python3-pip`
 - `pip install scikit-learn pandas fabric`
 - `make boost`
