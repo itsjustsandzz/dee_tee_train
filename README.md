@@ -1,8 +1,10 @@
 # Initial Setup
+- Clone this repository.
 - `sudo apt-get update`
 - `sudo apt-get upgrade`
 - `sudo apt-get install automake build-essential clang cmake git libgmp-dev libntl-dev libsodium-dev libssl-dev libtool python3 python3-pip`
 - `pip install scikit-learn pandas fabric`
+- `cd dee_tee_train/MP-SPDZ/`
 - `make boost`
 - Setup passwordless auth so that it's possible to directly ssh between machines. Refer [https://www.tecmint.com/ssh-passwordless-login-using-ssh-keygen-in-5-easy-steps/](https://www.tecmint.com/ssh-passwordless-login-using-ssh-keygen-in-5-easy-steps/)
 
